@@ -23,7 +23,7 @@ which has been included in `setup.sh`.
 Then, the environment with CMake 3.14.3, Geant4-10.06-patch-01, and ROOT 6.20/00 is configured. As long as no compilation errors are raised and the CMake version requirement is met, other versions on the LCG are also acceptable (mind your version of Geant4!). :stuck_out_tongue:
 
 ## Installation & Compilation
-Having set up the environment, this project can be cloned from GitHub and compiled in a normal way:
+Having set up the environment, this project can be cloned from GitHub and compiled normally:
 ```shell
 git clone git@github.com:phys-jychen/dss-ecal.git
 cd dss-ecal
@@ -65,4 +65,4 @@ By now, the compilation has been finished. Generate your YAML file, and have fun
 - More options for the locations of the electronics will be available in the following versions. The arrangements of the crystals will also be updated.
 
 ### 20 December 2023
-Added the option for deciding whether PCB will be constructed or not.
+Added an interface for deciding the length and width of PCB and SiPM.

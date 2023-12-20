@@ -76,12 +76,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     // Gap: carbon
     G4Material* sustain = C;
 
-    // Parameters of the components
+    // Parameters from YAML file
     G4int nCrystalInLayer = config->conf["ECAL"]["nCrystalInLayer"].as<G4int>();
     G4int nLayer = config->conf["ECAL"]["nLayer"].as<G4int>();
     G4double crystalWidth = config->conf["ECAL"]["crystalWidth"].as<G4double>() * cm;
     G4double crystalThick = config->conf["ECAL"]["crystalThick"].as<G4double>() * cm;
+    G4double SiPMLength = config->conf["ECAL"]["SiPMLength"].as<G4double>() * mm;
+    G4double SiPMWidth = config->conf["ECAL"]["SiPMWidth"].as<G4double>() * mm;
     G4bool constructPCB = config->conf["ECAL"]["constructPCB"].as<G4bool>();
+    G4double defaultPCBThick = config->conf["ECAL"]["PCBThick"].as<G4double>() * mm;
+
+    // Parameters of the components
     G4double crystalBasicLength = nCrystalInLayer * crystalWidth;
     G4double ESRThick = 0.3 * mm;
     G4double gap = 0.1 * mm;
@@ -91,12 +96,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4double ESROutLength = crystalLength + 2 * ESRThick;
     G4double ESROutWidth = crystalWidth + 2 * ESRThick;
     G4double ESROutThick = crystalThick + 2 * ESRThick;
-    G4double SiPMLength = 3.0 * mm;
-    G4double SiPMWidth = 3.0 * mm;
     G4double SiPMThick = 0.6 * mm;
     G4double PCBLength = ESROutLength;
     G4double PCBWidth = ESROutWidth;
-    G4double PCBThick = constructPCB ? 2.5 * mm : 0 * mm;
+    G4double PCBThick = constructPCB ? defaultPCBThick : 0 * mm;
     G4double gapOutLength = ESROutLength + gap;
     G4double gapOutWidth = ESROutWidth + gap;
     G4double gapOutThick = ESROutThick + SiPMThick + PCBThick + gap;
@@ -134,15 +137,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                                      SiPM,         // Material
                                                      "SiPM");      // Name
 
-    G4Box* solidPCB;
-    G4LogicalVolume* logicPCB;
+    G4Box* solidPCB = nullptr;
+    G4LogicalVolume* logicPCB = nullptr;
     if (constructPCB)
     {
         solidPCB = new G4Box("FR4",                                               // Name
-                                    0.5 * PCBLength, 0.5 * PCBWidth, 0.5 * PCBThick);    // Size
+                             0.5 * PCBLength, 0.5 * PCBWidth, 0.5 * PCBThick);    // Size
         logicPCB = new G4LogicalVolume(solidPCB,    // Solid
-                                                        FR4,         // Material
-                                                        "FR4");      // Name
+                                       FR4,         // Material
+                                       "FR4");      // Name
     }
 
     for (G4int i_layer = 0; i_layer < nLayer; i_layer++)

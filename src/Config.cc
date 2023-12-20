@@ -122,7 +122,11 @@ G4int Config::Print()
     fout << "    crystalWidth: 2.5    # In cm" << endl;
     fout << "    crystalThick: 2.5    # In cm" << endl;
     fout << endl;
+    fout << "    SiPMLength: 3.0    # In mm" << endl;
+    fout << "    SiPMWidth: 3.0    # In mm" << endl;
+    fout << endl;
     fout << "    constructPCB: true" << endl;
+    fout << "    PCBThick: 1.57    # In mm" << endl;
     fout <<  endl << endl;
     fout << "# Particle source set-up" << endl;
     fout << "Source:" << endl;
@@ -149,6 +153,6 @@ G4int Config::Print()
 
     fout.close();
 
-    cout << "Configuration file default.yaml successfully created!" << endl;
+    cout << "Configuration file \"default.yaml\" has been successfully created!" << endl;
     return 1;
 }
