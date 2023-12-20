@@ -1,0 +1,9 @@
+# Directories
+bin/
+build/
+run/
+cmake-build-debug/
+src/backup/
+
+# Files
+.clion.source.upload.marker
