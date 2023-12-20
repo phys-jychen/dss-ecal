@@ -26,7 +26,7 @@ void Run::SetPrimary(G4ParticleDefinition* particle, G4double energy)
 
 void Run::ParticleCount(G4String name, G4double Ekin)
 {
-    G4cout << "....................66666666666666666666...................." << G4endl;
+//    G4cout << "....................66666666666666666666...................." << G4endl;
     std::map<G4String, ParticleData>::iterator it = fParticleDataMap.find(name);
     if (it == fParticleDataMap.end())
         fParticleDataMap[name] = ParticleData(1, Ekin, Ekin, Ekin);

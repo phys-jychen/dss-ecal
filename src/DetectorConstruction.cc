@@ -81,6 +81,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4int nLayer = config->conf["ECAL"]["nLayer"].as<G4int>();
     G4double crystalWidth = config->conf["ECAL"]["crystalWidth"].as<G4double>() * cm;
     G4double crystalThick = config->conf["ECAL"]["crystalThick"].as<G4double>() * cm;
+    G4bool constructPCB = config->conf["ECAL"]["constructPCB"].as<G4bool>();
     G4double crystalBasicLength = nCrystalInLayer * crystalWidth;
     G4double ESRThick = 0.3 * mm;
     G4double gap = 0.1 * mm;
@@ -95,8 +96,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4double SiPMThick = 0.6 * mm;
     G4double PCBLength = ESROutLength;
     G4double PCBWidth = ESROutWidth;
-    G4double PCBThick = 0 * mm;
-//    G4double PCBThick = 2.5 * mm;
+    G4double PCBThick = constructPCB ? 2.5 * mm : 0 * mm;
     G4double gapOutLength = ESROutLength + gap;
     G4double gapOutWidth = ESROutWidth + gap;
     G4double gapOutThick = ESROutThick + SiPMThick + PCBThick + gap;
@@ -123,8 +123,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                                           solidESRIn);    // Subtrahend
     G4Box* solidSiPM = new G4Box("SiPM",                                                 // Name
                                  0.5 * SiPMLength, 0.5 * SiPMWidth, 0.5 * SiPMThick);    // Size
-//    G4Box* solidPCB = new G4Box("FR4",                                               // Name
-//                                0.5 * PCBLength, 0.5 * PCBWidth, 0.5 * PCBThick);    // Size
 
     G4LogicalVolume* logicCrystal = new G4LogicalVolume(solidCrystal,    // Solid
                                                         LYSO,            // Material
@@ -135,9 +133,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     G4LogicalVolume* logicSiPM = new G4LogicalVolume(solidSiPM,    // Solid
                                                      SiPM,         // Material
                                                      "SiPM");      // Name
-//    G4LogicalVolume* logicPCB = new G4LogicalVolume(solidPCB,    // Solid
-//                                                    FR4,         // Material
-//                                                    "FR4");      // Name
+
+    G4Box* solidPCB;
+    G4LogicalVolume* logicPCB;
+    if (constructPCB)
+    {
+        solidPCB = new G4Box("FR4",                                               // Name
+                                    0.5 * PCBLength, 0.5 * PCBWidth, 0.5 * PCBThick);    // Size
+        logicPCB = new G4LogicalVolume(solidPCB,    // Solid
+                                                        FR4,         // Material
+                                                        "FR4");      // Name
+    }
 
     for (G4int i_layer = 0; i_layer < nLayer; i_layer++)
     {
@@ -177,16 +183,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                   false,         // No Boolean operation
                                   -1,            // Copy number
                                   checkOverlap);
-//                new G4PVPlacement(0,             // No rotation
-//                                  G4ThreeVector(0,
-//                                                -0.5 * crystalLength - edgeBias + (0.5 + i_y) * gapOutWidth,
-//                                                i_layer * thickness + PCBPositionZ),
-//                                  logicPCB,      // Logical volume
-//                                  "FR4",         // Name
-//                                  logicWorld,    // Mother volume
-//                                  false,         // No Boolean operation
-//                                  -1,            // Copy number
-//                                  checkOverlap);
+                if (constructPCB)
+                    new G4PVPlacement(0,             // No rotation
+                                      G4ThreeVector(0,
+                                                    -0.5 * crystalLength - edgeBias + (0.5 + i_y) * gapOutWidth,
+                                                    i_layer * thickness + PCBPositionZ),
+                                      logicPCB,      // Logical volume
+                                      "FR4",         // Name
+                                      logicWorld,    // Mother volume
+                                      false,         // No Boolean operation
+                                      -1,            // Copy number
+                                      checkOverlap);
             }
         }
         else if (i_layer % 2 == 1)
@@ -223,16 +230,17 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                   false,         // No Boolean operation
                                   -1,            // Copy number
                                   checkOverlap);
-//                new G4PVPlacement(G4Transform3D(rot,    // Rotation matrix
-//                                                G4ThreeVector(-0.5 * crystalLength - edgeBias + (0.5 + i_x) * gapOutWidth,
-//                                                              0,
-//                                                              i_layer * thickness + PCBPositionZ)),
-//                                  logicPCB,             // Logical volume
-//                                  "FR4",                // Name
-//                                  logicWorld,           // Mother volume
-//                                  false,                // No Boolean operation
-//                                  -1,                   // Copy number
-//                                  checkOverlap);
+                if (constructPCB)
+                    new G4PVPlacement(G4Transform3D(rot,    // Rotation matrix
+                                                    G4ThreeVector(-0.5 * crystalLength - edgeBias + (0.5 + i_x) * gapOutWidth,
+                                                                  0,
+                                                                  i_layer * thickness + PCBPositionZ)),
+                                      logicPCB,             // Logical volume
+                                      "FR4",                // Name
+                                      logicWorld,           // Mother volume
+                                      false,                // No Boolean operation
+                                      -1,                   // Copy number
+                                      checkOverlap);
             }
         }
     }

@@ -63,3 +63,6 @@ By now, the compilation has been finished. Generate your YAML file, and have fun
 ### 19 December 2023
 - Creation of the program. The electronics are placed behind the crystals in $z$ direction, instead of on the ends.
 - More options for the locations of the electronics will be available in the following versions. The arrangements of the crystals will also be updated.
+
+### 20 December 2023
+Added the option for deciding whether PCB will be constructed or not.

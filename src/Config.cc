@@ -121,6 +121,8 @@ G4int Config::Print()
     fout << endl;
     fout << "    crystalWidth: 2.5    # In cm" << endl;
     fout << "    crystalThick: 2.5    # In cm" << endl;
+    fout << endl;
+    fout << "    constructPCB: true" << endl;
     fout <<  endl << endl;
     fout << "# Particle source set-up" << endl;
     fout << "Source:" << endl;

@@ -45,7 +45,7 @@ void EventAction::EndOfEventAction(const G4Event* evt)
     G4double crystalBasicLength = nCrystalInLayer * crystalWidth;
 
     // Printing survey
-    if (evtNb < 10 || (evtNb <= 100 && evtNb % 10 == 0) || (evtNb > 100 && evtNb <= 1000 && evtNb % 50 == 0) || (evtNb > 1000 && && evtNb <= 10000 && evtNb % 100 == 0) || (evtNb > 10000 && evtNb % 500 == 0))
+    if (evtNb < 10 || (evtNb <= 100 && evtNb % 10 == 0) || (evtNb > 100 && evtNb <= 1000 && evtNb % 50 == 0) || (evtNb > 1000 && evtNb <= 10000 && evtNb % 100 == 0) || (evtNb > 10000 && evtNb % 500 == 0))
         G4cout << "Begin of event: " << std::setw(6) << evtNb << fDecayChain << G4endl << G4endl;
 
     for (auto i : fHistoManager_Event->fParticleInfo.fecal_mape)

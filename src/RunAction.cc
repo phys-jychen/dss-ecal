@@ -20,7 +20,7 @@ RunAction::~RunAction()
 
 void RunAction::BeginOfRunAction(const G4Run*)
 { 
-    G4cout << "....................00000000000000000000...................." << G4endl;
+//    G4cout << "....................00000000000000000000...................." << G4endl;
 
     // Initialise arrays
     fDecayCount = fTimeCount = 0;
@@ -53,12 +53,12 @@ void RunAction::ParticleCount(G4String name, G4double Ekin)
         fEmin[name] = Ekin;
     if (Ekin > fEmax[name])
         fEmax[name] = Ekin;  
-    G4cout << "....................11111111111111111111...................." << G4endl;
+//    G4cout << "....................11111111111111111111...................." << G4endl;
 }
 
 void RunAction::Balance(G4double Ekin, G4double Pbal)
 {
-    G4cout << "....................22222222222222222222...................." << G4endl;
+//    G4cout << "....................22222222222222222222...................." << G4endl;
     fDecayCount++;
     fEkinTot[0] += Ekin;
 
@@ -83,7 +83,7 @@ void RunAction::Balance(G4double Ekin, G4double Pbal)
 
 void RunAction::EventTiming(G4double time)
 {
-    G4cout << "....................33333333333333333333...................." << G4endl;
+//    G4cout << "....................33333333333333333333...................." << G4endl;
     fTimeCount++;  
 //    G4cout << "fTimeCount " << fTimeCount << G4endl;
     fEventTime[0] += time;
@@ -97,13 +97,13 @@ void RunAction::EventTiming(G4double time)
 
 void RunAction::PrimaryTiming(G4double ptime)
 {
-    G4cout << "....................44444444444444444444...................." << G4endl;
+//    G4cout << "....................44444444444444444444...................." << G4endl;
     fPrimaryTime += ptime;
 }
 
 void RunAction::EndOfRunAction(const G4Run* run)
 {
-    G4cout << "....................55555555555555555555...................." << G4endl;
+//    G4cout << "....................55555555555555555555...................." << G4endl;
     G4int nbEvents = run->GetNumberOfEvent();
     if (nbEvents == 0)
         return;
