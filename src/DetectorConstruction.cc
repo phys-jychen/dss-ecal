@@ -54,6 +54,18 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     LYSO->AddMaterial(LSO, 90 * perCent);
     LYSO->AddMaterial(YSO, 10 * perCent);
 
+    // Wrapper: ESR
+    G4Material* ESR = new G4Material("ESR", 1.38 * g / cm3, 3);
+    ESR->AddElement(elC, 10);
+    ESR->AddElement(elH, 8);
+    ESR->AddElement(elO, 4);
+
+    // Gap: carbon
+    G4Material* sustain = C;
+
+    // SiPM: Si
+    G4Material* SiPM = Si;
+
     // PCB: FR4
     G4Material* quartz = nistManager->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
     G4Material* epoxy = new G4Material("epoxy", 1.3 * g / cm3, 3);
@@ -64,59 +76,73 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     FR4->AddMaterial(quartz, 52.8 * perCent);
     FR4->AddMaterial(epoxy, 47.2 * perCent);
 
-    // SiPM: Si
-    G4Material* SiPM = Si;
-
-    // Wrapper: ESR
-    G4Material* ESR = new G4Material("ESR", 1.38 * g / cm3, 3);
-    ESR->AddElement(elC, 10);
-    ESR->AddElement(elH, 8);
-    ESR->AddElement(elO, 4);
-
-    // Gap: carbon
-    G4Material* sustain = C;
+    // Optical adhesive:
+    G4Material* glue = epoxy;
 
     // Parameters from YAML file
-    G4int nCrystalInLayer = config->conf["ECAL"]["nCrystalInLayer"].as<G4int>();
-    G4int nLayer = config->conf["ECAL"]["nLayer"].as<G4int>();
-    G4double crystalWidth = config->conf["ECAL"]["crystalWidth"].as<G4double>() * cm;
-    G4double crystalThick = config->conf["ECAL"]["crystalThick"].as<G4double>() * cm;
-    G4double SiPMLength = config->conf["ECAL"]["SiPMLength"].as<G4double>() * mm;
-    G4double SiPMWidth = config->conf["ECAL"]["SiPMWidth"].as<G4double>() * mm;
-    G4bool constructPCB = config->conf["ECAL"]["constructPCB"].as<G4bool>();
-    G4double defaultPCBThick = config->conf["ECAL"]["PCBThick"].as<G4double>() * mm;
+    // Crystal
+    const G4int nCrystalColumns = config->conf["ECAL"]["nCrystalColumns"].as<G4int>();
+    const G4int nCrystalConnect = config->conf["ECAL"]["nCrystalConnect"].as<G4int>();
+    const G4int nLayer = config->conf["ECAL"]["nLayer"].as<G4int>();
+    const G4double crystalUnitLength = config->conf["ECAL"]["CrystalLength"].as<G4double>() * cm;
+    const G4double crystalWidth = config->conf["ECAL"]["CrystalWidth"].as<G4double>() * cm;
+    const G4double crystalThick = config->conf["ECAL"]["CrystalThick"].as<G4double>() * cm;
+    // Electronics
+    const G4bool dualReadout = config->conf["ECAL"]["DualReadout"].as<G4bool>();
+    const G4double SiPMLength = config->conf["ECAL"]["SiPMLength"].as<G4double>() * mm;
+    const G4double SiPMWidth = config->conf["ECAL"]["SiPMWidth"].as<G4double>() * mm;
+    const G4double PCBThick = config->conf["ECAL"]["PCBThick"].as<G4double>() * mm;
+
+    // Exception handling --- very important!
+    if (nCrystalColumns * crystalWidth == nCrystalConnect * crystalUnitLength)
+        G4cout << "Length and width of ECAL match." << G4endl;
+    else
+    {
+        G4cout << "Error: *** Length and width of ECAL do not match!" << G4endl;
+        G4cout << "Check \"nCrystalColumns\", \"nCrystalConnect\", \"CrystalLength\", and \"CrystalWidth\" in your configuration file!" << G4endl << G4endl;
+        throw;
+    }
 
     // Parameters of the components
-    G4double crystalBasicLength = nCrystalInLayer * crystalWidth;
     G4double ESRThick = 0.3 * mm;
     G4double gap = 0.1 * mm;
-    G4double edgeBias = ESRThick + 0.5 * gap;
+    G4double glueLength = crystalWidth;
+    G4double glueWidth = crystalThick;
+    G4double glueThick = 2 * ESRThick + gap;
 
-    G4double crystalLength = crystalBasicLength + (nCrystalInLayer - 1) * (2 * ESRThick + gap);
+    G4double crystalLength = nCrystalConnect * crystalUnitLength + (nCrystalColumns - 1) * glueThick;
     G4double ESROutLength = crystalLength + 2 * ESRThick;
     G4double ESROutWidth = crystalWidth + 2 * ESRThick;
     G4double ESROutThick = crystalThick + 2 * ESRThick;
-    G4double SiPMThick = 0.6 * mm;
-    G4double PCBLength = ESROutLength;
-    G4double PCBWidth = ESROutWidth;
-    G4double PCBThick = constructPCB ? defaultPCBThick : 0 * mm;
+
     G4double gapOutLength = ESROutLength + gap;
     G4double gapOutWidth = ESROutWidth + gap;
-    G4double gapOutThick = ESROutThick + SiPMThick + PCBThick + gap;
+    G4double gapOutThick = ESROutThick + gap;
 
     G4double thickness = gapOutThick;
 
+    G4double SiPMThick = 0.6 * mm;
+    G4double PCBLength = ESROutLength;
+    G4double PCBWidth = thickness * nLayer;
+
     G4double crystalPositionZ = 0.5 * ESROutThick;
+    G4double gluePositionZ = crystalPositionZ;
     G4double ESRPositionZ = crystalPositionZ;
-    G4double SiPMPositionZ = ESRPositionZ + 0.5 * (ESROutThick + SiPMThick);
-    G4double PCBPositionZ = SiPMPositionZ + 0.5 * (SiPMThick + PCBThick);
     G4double gapPositionZ = 0.5 * gapOutThick;
+    G4double SiPMPositionZ = ESRPositionZ;
+    G4double PCBPositionZ = 0.5 * thickness * nLayer;
 
     G4bool checkOverlap = false;    // No overlap checking triggered
 
-    // Crystal & ESR & SiPM & PCB
+    // Rotation matrix: 90 degrees along z axis
+    G4RotationMatrix rot;
+    rot.rotateZ(90 * deg);
+
+    // Crystal & ESR & SiPM
     G4Box* solidCrystal = new G4Box("LYSO",                                                          // Name
                                     0.5 * crystalLength, 0.5 * crystalWidth, 0.5 * crystalThick);    // Size
+    G4Box* solidGlue = new G4Box("epoxy",                                                // Name
+                                 0.5 * glueThick, 0.5 * glueLength, 0.5 * glueWidth);    // Size
     G4Box* solidESROut = new G4Box("ESR_Out",                                                    // Name
                                    0.5 * ESROutLength, 0.5 * ESROutWidth, 0.5 * ESROutThick);    // Size
     G4Box* solidESRIn = new G4Box("ESR_In",                                                        // Name
@@ -125,11 +151,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                                           solidESROut,    // Minuend
                                                           solidESRIn);    // Subtrahend
     G4Box* solidSiPM = new G4Box("SiPM",                                                 // Name
-                                 0.5 * SiPMLength, 0.5 * SiPMWidth, 0.5 * SiPMThick);    // Size
+                                 0.5 * SiPMThick, 0.5 * SiPMLength, 0.5 * SiPMWidth);    // Size
 
     G4LogicalVolume* logicCrystal = new G4LogicalVolume(solidCrystal,    // Solid
                                                         LYSO,            // Material
                                                         "LYSO");         // Name
+    G4LogicalVolume* logicGlue = new G4LogicalVolume(solidGlue,    // Solid
+                                                     glue,         // Material
+                                                     "glue");      // Name
     G4LogicalVolume* logicESR = new G4LogicalVolume(solidESR,    // Solid
                                                     ESR,         // Material
                                                     "ESR");      // Name
@@ -137,38 +166,39 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                                      SiPM,         // Material
                                                      "SiPM");      // Name
 
-    G4Box* solidPCB = nullptr;
-    G4LogicalVolume* logicPCB = nullptr;
-    if (constructPCB)
-    {
-        solidPCB = new G4Box("FR4",                                               // Name
-                             0.5 * PCBLength, 0.5 * PCBWidth, 0.5 * PCBThick);    // Size
-        logicPCB = new G4LogicalVolume(solidPCB,    // Solid
-                                       FR4,         // Material
-                                       "FR4");      // Name
-    }
-
     for (G4int i_layer = 0; i_layer < nLayer; i_layer++)
     {
-        G4RotationMatrix rot;
-        rot.rotateZ(90 * deg);
         if (i_layer % 2 == 0)
         {
-            for (G4int i_y = 0; i_y < nCrystalInLayer; i_y++)
+            for (G4int i_y = 0; i_y < nCrystalColumns; i_y++)
             {
-                new G4PVPlacement(0,                              // No rotation
-                                  G4ThreeVector(0,
-                                                -0.5 * crystalLength - edgeBias + (0.5 + i_y) * gapOutWidth,
-                                                i_layer * thickness + crystalPositionZ),
-                                  logicCrystal,                   // Logical volume
-                                  "LYSO",                         // Name
-                                  logicWorld,                     // Mother volume
-                                  false,                          // No Boolean operation
-                                  10000 * i_layer + 100 * i_y,    // Copy number
-                                  checkOverlap);
+                for (G4int i_x = 0; i_x < nCrystalConnect; i_x++)
+                {
+                    new G4PVPlacement(0,                              // No rotation
+                                      G4ThreeVector(-0.5 * crystalLength + 0.5 * crystalUnitLength + i_x * (glueThick + crystalUnitLength),
+                                                    -0.5 * gapOutLength + (0.5 + i_y) * gapOutWidth,
+                                                    i_layer * thickness + crystalPositionZ),
+                                      logicCrystal,                   // Logical volume
+                                      "LYSO",                         // Name
+                                      logicWorld,                     // Mother volume
+                                      false,                          // No Boolean operation
+                                      10000 * i_layer + 100 * i_y,    // Copy number
+                                      checkOverlap);
+                    if (i_x < nCrystalConnect - 1)
+                        new G4PVPlacement(0,             // No rotation
+                                          G4ThreeVector(-0.5 * crystalLength + crystalUnitLength + 0.5 * glueThick + i_x * (glueThick + crystalUnitLength),
+                                                        -0.5 * gapOutLength + (0.5 + i_y) * gapOutWidth,
+                                                        i_layer * thickness + gluePositionZ),
+                                          logicGlue,     // Logical volume
+                                          "glue",        // Name
+                                          logicWorld,    // Mother volume
+                                          false,         // No Boolean operation
+                                          -1,            // Copy number
+                                          checkOverlap);
+                }
                 new G4PVPlacement(0,             // No rotation
                                   G4ThreeVector(0,
-                                                -0.5 * crystalLength - edgeBias + (0.5 + i_y) * gapOutWidth,
+                                                -0.5 * gapOutLength + (0.5 + i_y) * gapOutWidth,
                                                 i_layer * thickness + ESRPositionZ),
                                   logicESR,      // Logical volume
                                   "ESR",         // Name
@@ -177,8 +207,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                   -1,            // Copy number
                                   checkOverlap);
                 new G4PVPlacement(0,             // No rotation
-                                  G4ThreeVector(0,
-                                                -0.5 * crystalLength - edgeBias + (0.5 + i_y) * gapOutWidth,
+                                  G4ThreeVector(0.5 * gapOutLength + 0.5 * SiPMThick,
+                                                -0.5 * gapOutLength + (0.5 + i_y) * gapOutWidth,
                                                 i_layer * thickness + SiPMPositionZ),
                                   logicSiPM,     // Logical volume
                                   "SiPM",        // Name
@@ -186,13 +216,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                   false,         // No Boolean operation
                                   -1,            // Copy number
                                   checkOverlap);
-                if (constructPCB)
+                if (dualReadout)
                     new G4PVPlacement(0,             // No rotation
-                                      G4ThreeVector(0,
-                                                    -0.5 * crystalLength - edgeBias + (0.5 + i_y) * gapOutWidth,
-                                                    i_layer * thickness + PCBPositionZ),
-                                      logicPCB,      // Logical volume
-                                      "FR4",         // Name
+                                      G4ThreeVector(-0.5 * gapOutLength - 0.5 * SiPMThick,
+                                                    -0.5 * gapOutLength + (0.5 + i_y) * gapOutWidth,
+                                                    i_layer * thickness + SiPMPositionZ),
+                                      logicSiPM,     // Logical volume
+                                      "SiPM",        // Name
                                       logicWorld,    // Mother volume
                                       false,         // No Boolean operation
                                       -1,            // Copy number
@@ -201,45 +231,59 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         }
         else if (i_layer % 2 == 1)
         {
-            for (G4int i_x = 0; i_x < nCrystalInLayer; i_x++)
+            for (G4int i_x = 0; i_x < nCrystalColumns; i_x++)
             {
-                new G4PVPlacement(G4Transform3D(rot,        // Rotation matrix
-                                                G4ThreeVector(-0.5 * crystalLength - edgeBias + (0.5 + i_x) * gapOutWidth,
-                                                              0,
-                                                              i_layer * thickness + crystalPositionZ)),
-                                  logicCrystal,             // Logical volume
-                                  "LYSO",                   // Name
-                                  logicWorld,               // Mother volume
-                                  false,                    // No Boolean operation
-                                  10000 * i_layer + i_x,    // Copy number
-                                  checkOverlap);
+                for (G4int i_y = 0; i_y < nCrystalConnect; i_y++)
+                {
+                    new G4PVPlacement(G4Transform3D(rot,        // Rotation matrix
+                                                    G4ThreeVector(-0.5 * gapOutLength + (0.5 + i_x) * gapOutWidth,
+                                                                  -0.5 * crystalLength + 0.5 * crystalUnitLength + i_y * (glueThick + crystalUnitLength),
+                                                                  i_layer * thickness + crystalPositionZ)),
+                                      logicCrystal,             // Logical volume
+                                      "LYSO",                   // Name
+                                      logicWorld,               // Mother volume
+                                      false,                    // No Boolean operation
+                                      10000 * i_layer + i_x,    // Copy number
+                                      checkOverlap);
+                    if (i_y < nCrystalConnect - 1)
+                        new G4PVPlacement(G4Transform3D(rot,   // Rotation matrix
+                                                        G4ThreeVector(-0.5 * gapOutLength + (0.5 + i_x) * gapOutWidth,
+                                                                      -0.5 * crystalLength + crystalUnitLength + 0.5 * glueThick + i_y * (glueThick + crystalUnitLength),
+                                                                      i_layer * thickness + gluePositionZ)),
+                                          logicGlue,           // Logical volume
+                                          "glue",              // Name
+                                          logicWorld,          // Mother volume
+                                          false,               // No Boolean operation
+                                          -1,                  // Copy number
+                                          checkOverlap);
+                }
                 new G4PVPlacement(G4Transform3D(rot,    // Rotation matrix
-                                                G4ThreeVector(-0.5 * crystalLength - edgeBias + (0.5 + i_x) * gapOutWidth,
+                                                G4ThreeVector(-0.5 * gapOutLength + (0.5 + i_x) * gapOutWidth,
                                                               0,
                                                               i_layer * thickness + ESRPositionZ)),
-                                  logicESR,             // Logiacl volume
+                                  logicESR,             // Logical volume
                                   "ESR",                // Name
                                   logicWorld,           // Mother volume
                                   false,                // No Boolean operation
                                   -1,                   // Copy number
                                   checkOverlap);
-                new G4PVPlacement(0,             // No rotation
-                                  G4ThreeVector(-0.5 * crystalLength - edgeBias + (0.5 + i_x) * gapOutWidth,
-                                                0,
-                                                i_layer * thickness + SiPMPositionZ),
-                                  logicSiPM,     // Logical volume
-                                  "SiPM",        // Logical volume
-                                  logicWorld,    // Mother volume
-                                  false,         // No Boolean operation
-                                  -1,            // Copy number
+                new G4PVPlacement(G4Transform3D(rot,    // No rotation
+                                                G4ThreeVector(-0.5 * gapOutLength + (0.5 + i_x) * gapOutWidth,
+                                                              0.5 * gapOutLength + 0.5 * SiPMThick,
+                                                              i_layer * thickness + SiPMPositionZ)),
+                                  logicSiPM,            // Logical volume
+                                  "SiPM",               // Name
+                                  logicWorld,           // Mother volume
+                                  false,                // No Boolean operation
+                                  -1,                   // Copy number
                                   checkOverlap);
-                if (constructPCB)
-                    new G4PVPlacement(G4Transform3D(rot,    // Rotation matrix
-                                                    G4ThreeVector(-0.5 * crystalLength - edgeBias + (0.5 + i_x) * gapOutWidth,
-                                                                  0,
-                                                                  i_layer * thickness + PCBPositionZ)),
-                                      logicPCB,             // Logical volume
-                                      "FR4",                // Name
+                if (dualReadout)
+                    new G4PVPlacement(G4Transform3D(rot,    // No rotation
+                                                    G4ThreeVector(-0.5 * gapOutLength + (0.5 + i_x) * gapOutWidth,
+                                                                  -0.5 * gapOutLength - 0.5 * SiPMThick,
+                                                                  i_layer * thickness + SiPMPositionZ)),
+                                      logicSiPM,            // Logical volume
+                                      "SiPM",               // Name
                                       logicWorld,           // Mother volume
                                       false,                // No Boolean operation
                                       -1,                   // Copy number
@@ -263,15 +307,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     for (G4int i_layer = 0; i_layer < nLayer; i_layer++)
     {
-        G4RotationMatrix rot;
-        rot.rotateZ(90 * deg);
         if (i_layer % 2 == 0)
-        {
-            for (G4int i_y = 0; i_y < nCrystalInLayer; i_y++)
-            {
+            for (G4int i_y = 0; i_y < nCrystalColumns; i_y++)
                 new G4PVPlacement(0,             // No rotation
                                   G4ThreeVector(0,
-                                                -0.5 * crystalLength - edgeBias + (0.5 + i_y) * gapOutWidth,
+                                                -0.5 * gapOutLength + (0.5 + i_y) * gapOutWidth,
                                                 i_layer * thickness + gapPositionZ),
                                   logicGap,      // Logical volume
                                   "Gap",         // Name
@@ -279,14 +319,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                   false,         // No Boolean operation
                                   -1,            // Copy number
                                   checkOverlap);
-            }
-        }
         else if (i_layer % 2 == 1)
-        {
-            for (G4int i_x = 0; i_x < nCrystalInLayer; i_x++)
-            {
+            for (G4int i_x = 0; i_x < nCrystalColumns; i_x++)
                 new G4PVPlacement(G4Transform3D(rot,    // Rotation matrix
-                                                G4ThreeVector(-0.5 * crystalLength - edgeBias + (0.5 + i_x) * gapOutWidth,
+                                                G4ThreeVector(-0.5 * gapOutLength + (0.5 + i_x) * gapOutWidth,
                                                               0,
                                                               i_layer * thickness + gapPositionZ)),
                                   logicGap,             // Logical volume
@@ -295,8 +331,56 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                   false,                // No Boolean operation
                                   -1,                   // Copy number
                                   checkOverlap);
-            }
-        }
+    }
+
+    // PCB
+    G4Box* solidPCB = new G4Box("FR4",                                               // Name
+                                0.5 * PCBThick, 0.5 * PCBLength, 0.5 * PCBWidth);    // Size
+    G4LogicalVolume* logicPCB = new G4LogicalVolume(solidPCB,    // Solid
+                                                    FR4,         // Material
+                                                    "FR4");      // Name
+    new G4PVPlacement(0,             // No rotation
+                      G4ThreeVector(0.5 * gapOutLength + SiPMThick + 0.5 * PCBThick,
+                                    0,
+                                    PCBPositionZ),
+                      logicPCB,      // Logical volume
+                      "FR4",         // Name
+                      logicWorld,    // Mother volume
+                      false,         // No Boolean operation
+                      -1,            // Copy number
+                      checkOverlap);
+    new G4PVPlacement(G4Transform3D(rot,    // Rotation matrix
+                                    G4ThreeVector(0,
+                                                  0.5 * gapOutLength + SiPMThick + 0.5 * PCBThick,
+                                                  PCBPositionZ)),
+                      logicPCB,             // Logical volume
+                      "FR4",                // Name
+                      logicWorld,           // Mother volume
+                      false,                // No Boolean operation
+                      -1,                   // Copy number
+                      checkOverlap);
+    if (dualReadout)
+    {
+        new G4PVPlacement(0,             // No rotation
+                          G4ThreeVector(-0.5 * gapOutLength - SiPMThick - 0.5 * PCBThick,
+                                        0,
+                                        PCBPositionZ),
+                          logicPCB,      // Logical volume
+                          "FR4",         // Name
+                          logicWorld,    // Mother volume
+                          false,         // No Boolean operation
+                          -1,            // Copy number
+                          checkOverlap);
+        new G4PVPlacement(G4Transform3D(rot,    // Rotation matrix
+                                        G4ThreeVector(0,
+                                                      -0.5 * gapOutLength - SiPMThick - 0.5 * PCBThick,
+                                                      PCBPositionZ)),
+                          logicPCB,             // Logical volume
+                          "FR4",                // Name
+                          logicWorld,           // Mother volume
+                          false,                // No Boolean operation
+                          -1,                   // Copy number
+                          checkOverlap);
     }
 
 //    logicAbsorber->SetVisAttributes(visAttributes);
@@ -317,14 +401,13 @@ G4VPhysicalVolume* DetectorConstruction::ConstructWorld()
 {
     G4NistManager* nistManager = G4NistManager::Instance();
     G4Material* Vacuum = nistManager->FindOrBuildMaterial("G4_Galactic");
-    G4bool checkOverlaps = false;
+    G4bool checkOverlaps = false;    // No overlap checking triggered
 
     // Full sphere shape
     G4double solidWorld_rmax = 200 * cm;
     G4Orb* solidWorld = new G4Orb("World",             // Name
                                   solidWorld_rmax);    // Size
 
-//    G4LogicalVolume*
     logicWorld = new G4LogicalVolume(solidWorld,    // Solid
                                      Vacuum,        // Material
                                      "World");      // Name

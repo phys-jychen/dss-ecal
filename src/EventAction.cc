@@ -27,22 +27,17 @@ EventAction::~EventAction()
 void EventAction::BeginOfEventAction(const G4Event*)
 {
     fStepTag = 0;
-//    G4cout << "....................66666666666666666666...................." << G4endl;
     fDecayChain = " ";
 //    fHistoManager_Event->fParticleInfo.reset();
-//    G4cout << "Begin of event" << G4endl;
 }
 
 void EventAction::EndOfEventAction(const G4Event* evt)
 {
-//    G4cout << " >>>>>>>>>>>>>>>>> " << fHistoManager_Event->fParticleInfo.fPrimaryEnergy << " <<<<<<<<<<<<<<<" << G4endl;
-//    G4cout << "....................77777777777777777777...................." << G4endl;
     G4int evtNb = evt->GetEventID();
 
-    G4int nCrystalInLayer = config->conf["ECAL"]["nCrystalInLayer"].as<G4int>();
-    G4double crystalWidth = config->conf["ECAL"]["crystalWidth"].as<G4double>();
-    G4double crystalThick = config->conf["ECAL"]["crystalThick"].as<G4double>();
-    G4double crystalBasicLength = nCrystalInLayer * crystalWidth;
+    G4int nCrystalColumns = config->conf["ECAL"]["nCrystalColumns"].as<G4int>();
+    G4double crystalWidth = config->conf["ECAL"]["CrystalWidth"].as<G4double>();
+    G4double crystalThick = config->conf["ECAL"]["CrystalThick"].as<G4double>();
 
     // Printing survey
     if (evtNb < 10 || (evtNb <= 100 && evtNb % 10 == 0) || (evtNb > 100 && evtNb <= 1000 && evtNb % 50 == 0) || (evtNb > 1000 && evtNb <= 10000 && evtNb % 100 == 0) || (evtNb > 10000 && evtNb % 500 == 0))
@@ -64,9 +59,9 @@ void EventAction::EndOfEventAction(const G4Event* evt)
         G4double y = 0.0;
         G4double z = 0.0;
         if (layer % 2 == 0)
-            y = -0.5 * crystalBasicLength + (i_y + 0.5) * crystalWidth;
+            y = (-0.5 * nCrystalColumns + i_y + 0.5) * crystalWidth;
         else if (layer % 2 == 1)
-            x = -0.5 * crystalBasicLength + (i_x + 0.5) * crystalWidth;
+            x = (-0.5 * nCrystalColumns + i_x + 0.5) * crystalWidth;
         z = layer * crystalThick;
         fHistoManager_Event->fParticleInfo.fecal_cellx.emplace_back(x);
         fHistoManager_Event->fParticleInfo.fecal_celly.emplace_back(y);
@@ -80,10 +75,9 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 void EventAction::AddEcalHit(const G4int& copyNo, const G4double& edep, const G4double& time, const G4int& pdgid, const G4int& trackid)
 {
     /*
-    G4int nCrystalInLayer = config->conf["ECAL"]["nCrystalInLayer"].as<G4int>();
-    G4double crystalWidth = config->conf["ECAL"]["crystalWidth"].as<G4double>();
-    G4double crystalThick = config->conf["ECAL"]["crystalThick"].as<G4double>();
-    G4double crystalBasicLength = nCrystalInLayer * crystalWidth;
+    G4int nCrystalColumns = config->conf["ECAL"]["nCrystalColumns"].as<G4int>();
+    G4double crystalWidth = config->conf["ECAL"]["CrystalWidth"].as<G4double>();
+    G4double crystalThick = config->conf["ECAL"]["CrystalThick"].as<G4double>();
 
 //    fHistoManager_Event->fParticleInfo.fecal_psdid.emplace_back(copyNo);
 //    fHistoManager_Event->fParticleInfo.fecal_energy.emplace_back(edep);
@@ -97,10 +91,10 @@ void EventAction::AddEcalHit(const G4int& copyNo, const G4double& edep, const G4
     G4double x = 0.0;
     G4double y = 0.0;
     G4double z = 0.0;
-    if (layer % 2 == 0)
-        y = -0.5 * crystalBasicLength + (i_y + 0.5) * crystalWidth;
-    else if (layer % 2 == 1)
-        x = -0.5 * crystalBasicLength + (i_x + 0.5) * crystalWidth;
+        if (layer % 2 == 0)
+            y = (-0.5 * nCrystalColumns + i_y + 0.5) * crystalWidth;
+        else if (layer % 2 == 1)
+            x = (-0.5 * nCrystalColumns + i_x + 0.5) * crystalWidth;
     z = layer * crystalThick;
 //    fHistoManager_Event->fParticleInfo.fecal_x.emplace_back(x);
 //    fHistoManager_Event->fParticleInfo.fecal_y.emplace_back(y);

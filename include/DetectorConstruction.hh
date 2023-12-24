@@ -9,7 +9,7 @@
 class Config;
 class DetectorConstruction : public G4VUserDetectorConstruction
 {
-  public:
+public:
     DetectorConstruction(Config* c);
     ~DetectorConstruction();
 
@@ -26,11 +26,11 @@ class DetectorConstruction : public G4VUserDetectorConstruction
 	    return this->physiWorld;
 	}
     
-  private:
+private:
     G4double fWorldSize;
 	G4LogicalVolume* logicWorld;
 	G4VPhysicalVolume* ConstructWorld(); 
-	G4VPhysicalVolume* physiWorld; 
+	G4VPhysicalVolume* physiWorld;
     G4VisAttributes* visAttributes;
 	Config* config;
 };

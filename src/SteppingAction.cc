@@ -43,8 +43,8 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
     if (time > 150.0)
         return;
 
-    // check if we are in scoring volume
-    // collect energy and track length step by step
+    // Check if we are in scoring volume
+    // Collect energy and track length step by step
 //    G4cout << volumeName << " " << G4int (volumeName == "LYSO") << " " << edep << G4endl;
     if (volumeName == "LYSO")
         fEventAction_Step->AddEcalHit(copyNo, edep, time, pdgid, trackid);
@@ -57,8 +57,8 @@ void SteppingAction::Reset()
 
 G4double SteppingAction::BirksAttenuation(const G4Step* aStep)
 {
-    //Example of Birk attenuation law in organic scintillators.
-    //adapted from Geant3 PHYS337. See MIN 80 (1970) 239-244
+    // Example of Birk attenuation law in organic scintillators.
+    // Adapted from Geant3 PHYS337. See MIN 80 (1970) 239-244
     //
     G4Material* material = aStep->GetTrack()->GetMaterial();
     G4double birk1       = material->GetIonisation()->GetBirksConstant();

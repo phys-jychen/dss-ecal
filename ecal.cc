@@ -9,7 +9,7 @@ G4int main(G4int argc, char** argv)
         if (std::string(argv[i]) == std::string("-h") || std::string(argv[i]) == std::string("-help"))
         {
             std::cout << std::endl;
-            std::cout << "Help information" << std::endl << std::endl;
+            std::cout << "**********  Help information  **********" << std::endl << std::endl;
             std::cout << "Produce default.yaml: ecal -p" << std::endl;
             std::cout << "Load a YAML file:     ecal -c [file]" << std::endl << std::endl;
             return 0;

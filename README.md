@@ -9,9 +9,9 @@ This program was designed for generating Monte Carlo samples of DarkSHINE ECAL. 
 ### Structure of ECAL
 - **Crystal:** LYSO; cross-section 2.5 × 2.5 cm<sup>2</sup> in general, while the length can be set in the YAML file.
 - **Wrapper:** ESR, 0.3 mm thick.
-- **SiPM:** Silicon, 3 × 3 × 0.6 mm<sup>3</sup>.
-- **PCB:** FR4, 2.5-mm thick.
-- **Gap:** Carbon structure; between neighbouring crystals in the same layer, and between two consecutive layers.
+- **SiPM:** Silicon, 0.6-mm thick, while the length and width can be set in the configuration file. Locates between the wrapped crystal and PCB.
+- **PCB:** FR4, 2.5-mm thick. Considering the merits of $x$–$y$ crossing structure, the PCBs are placed on the sides of ECAL.
+- **Gap:** Carbon structure; both between the neighbouring crystals in the same layer and two consecutive layers.
 
 ## Environment Set-up
 This project requires CMake version >= 3.11. If you are working on the cluster of INPAC, IHEP, etc., the environment can be easily set up by executing
@@ -66,3 +66,9 @@ By now, the compilation has been finished. Generate your YAML file, and have fun
 
 ### 20 December 2023
 Added an interface for deciding the length and width of PCB and SiPM.
+
+### 24 December 2023
+- Moved the PCBs to the sides of ECAL, instead of after each layer.
+- Added an interface for deciding the read-out mode — single or dual read-out.
+- Added optical adhesives between the ends of the crystals. In this version, the material is epoxy (the same as that used in FR4) which should be modified in future versions. No ideal material (with specific chemical formula) has been found for this version...
+- Added exception handling section, which checks whether the length and width of ECAL match, before construction.
