@@ -45,13 +45,11 @@ void EventAction::EndOfEventAction(const G4Event* evt)
 
     for (auto i : fHistoManager_Event->fParticleInfo.fecal_mape)
     {
-        fHistoManager_Event->fParticleInfo.fecal_cellid.emplace_back(i.first);
-        /*
-        if (i.second < 0.1)
+        if (i.second <= 0)
             continue;
-        fHistoManager_Event->fParticleInfo.fecal_celle.emplace_back(SiPMDigi(i.second));
-        */
+        fHistoManager_Event->fParticleInfo.fecal_cellid.emplace_back(i.first);
         fHistoManager_Event->fParticleInfo.fecal_celle.emplace_back(i.second);
+//        fHistoManager_Event->fParticleInfo.fecal_celle.emplace_back(SiPMDigi(i.second));
         G4int layer = i.first / 10000;
         G4int i_y = (i.first % 10000) / 100;
         G4int i_x = i.first % 100;
