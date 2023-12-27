@@ -95,12 +95,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
     // Exception handling --- very important!
     if (nCrystalColumns * crystalWidth == nCrystalConnect * crystalUnitLength)
-        G4cout << "Length and width of ECAL match." << G4endl;
+    {
+        G4cout << "--> Length and width of ECAL match." << G4endl;
+        G4cout << "--> Continuing..." << G4endl;
+    }
     else
     {
-        G4cout << "Error: *** Length and width of ECAL do not match!" << G4endl;
-        G4cout << "Check \"nCrystalColumns\", \"nCrystalConnect\", \"CrystalLength\", and \"CrystalWidth\" in your configuration file!" << G4endl << G4endl;
-        throw;
+        G4ExceptionDescription msg;
+        G4Exception("DetectorConstruction::Construct()", "Length and width of ECAL do no match!", FatalException, msg);
     }
 
     // Parameters of the components

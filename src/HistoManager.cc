@@ -16,7 +16,7 @@ HistoManager::~HistoManager()
 
 void HistoManager::book()
 {
-    G4cout << "----------> Creating ROOT file < ----------" << G4endl << G4endl;
+    G4cout << "----------> Creating ROOT file <----------" << G4endl << G4endl;
     fRootFile = new TFile(fOutName.c_str(), "RECREATE");
     fNtuple = new TTree("dp", "MC events");
 
