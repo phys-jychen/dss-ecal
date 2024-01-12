@@ -15,14 +15,14 @@ class Config;
 
 class TrackingAction : public G4UserTrackingAction
 {
-public:  
-    TrackingAction(RunAction*,EventAction*,Config *c);
-    ~TrackingAction();
-   
-    virtual void  PreUserTrackingAction(const G4Track*);
-    virtual void PostUserTrackingAction(const G4Track*);
+public:
+    [[maybe_unused]] TrackingAction(RunAction*, EventAction*, Config* c);
+    [[maybe_unused]] ~TrackingAction();
+
+    [[maybe_unused]] virtual void  PreUserTrackingAction(const G4Track*);
+    [[maybe_unused]] virtual void PostUserTrackingAction(const G4Track*);
     
-    void SetFullChain(G4bool flag) { fFullChain = flag;};
+    void SetFullChain(G4bool flag) { fFullChain = flag; };
   
     //ParticleInfo fParticleInfo_Track;
     void AddEdep(G4double edep)
@@ -32,16 +32,16 @@ public:
     }
   
 private:
-    RunAction* fRun;
-    EventAction*        fEvent;
-    Config*		config;
+    RunAction*   fRun;
+    EventAction* fEvent;
+    Config*		 config;
     
     G4double fCharge, fBaryonNo, fMass;
     G4double  fParticleEnCode;        
     G4double fTrackEdep;
     G4bool   fFullChain;
     ParticleInfo fParticleInfo_Tracking;
-    //SteppingAction fSteppingAction_Tracking;
+//    SteppingAction fSteppingAction_Tracking;
 };
 
 #endif

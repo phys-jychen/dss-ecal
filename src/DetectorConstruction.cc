@@ -76,10 +76,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     FR4->AddMaterial(quartz, 52.8 * perCent);
     FR4->AddMaterial(epoxy, 47.2 * perCent);
 
-    // Optical adhesive:
+    // Optically clear adhesive (OCA):
+    // Epoxy in FR4
     G4Material* glue = epoxy;
 
     // Parameters from YAML file
+    // Target
+    const G4bool buildTarget = config->conf["Target"]["BuildTarget"].as<G4bool>();
     // Crystal
     const G4int nCrystalColumns = config->conf["ECAL"]["nCrystalColumns"].as<G4int>();
     const G4int nCrystalConnect = config->conf["ECAL"]["nCrystalConnect"].as<G4int>();
@@ -104,6 +107,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
         G4ExceptionDescription msg;
         G4Exception("DetectorConstruction::Construct()", "Length and width of ECAL do no match!", FatalException, msg);
     }
+
+    if (buildTarget)
+        physiTarget = ConstructTarget();
 
     // Parameters of the components
     G4double ESRThick = 0.3 * mm;
@@ -403,7 +409,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructWorld()
 {
     G4NistManager* nistManager = G4NistManager::Instance();
     G4Material* Vacuum = nistManager->FindOrBuildMaterial("G4_Galactic");
-    G4bool checkOverlaps = false;    // No overlap checking triggered
+    G4bool checkOverlap = false;    // No overlap checking triggered
 
     // Full sphere shape
     G4double solidWorld_rmax = 200 * cm;
@@ -420,8 +426,36 @@ G4VPhysicalVolume* DetectorConstruction::ConstructWorld()
                                                          0,                  // Mother volume
                                                          false,              // No boolean operation
                                                          0,                  // Copy number
-                                                         checkOverlaps);
-    logicWorld->SetVisAttributes(visAttributes);
+                                                         checkOverlap);
+//    logicWorld->SetVisAttributes(visAttributes);
 
     return physicalWorld;
+}
+
+G4VPhysicalVolume* DetectorConstruction::ConstructTarget()
+{
+    G4NistManager* nistManager = G4NistManager::Instance();
+    G4Material* W = nistManager->FindOrBuildMaterial("G4_W");
+    G4bool checkOverlap = false;    // No overlap checking triggered
+
+    const G4double targetLength = config->conf["Target"]["TargetLength"].as<G4double>() * cm;
+    const G4double targetWidth = config->conf["Target"]["TargetWidth"].as<G4double>() * cm;
+    const G4double targetThick = config->conf["Target"]["TargetThick"].as<G4double>() * mm;
+    const G4double targetPositionZ = config->conf["Target"]["TargetPositionZ"].as<G4double>() * mm;
+
+    G4Box* solidTarget = new G4Box("Target",                                                     // Name
+                                   0.5 * targetLength, 0.5 * targetWidth, 0.5 * targetThick);    // Size
+    logicTarget = new G4LogicalVolume(solidTarget,    // Solid
+                                      W,              // Material
+                                      "Target");      // Name
+    G4VPhysicalVolume* physicalTarget = new G4PVPlacement(0,              // No rotation
+                                                          G4ThreeVector(0, 0, targetPositionZ),
+                                                          logicTarget,    // Logical volume
+                                                          "Target",       // Name
+                                                          logicWorld,     // Mother volume
+                                                          false,          // No boolean operation
+                                                          -1,             // Copy number
+                                                          checkOverlap);
+
+    return physicalTarget;
 }

@@ -28,11 +28,14 @@ public:
     
 private:
     G4double fWorldSize;
-	G4LogicalVolume* logicWorld;
-	G4VPhysicalVolume* ConstructWorld(); 
-	G4VPhysicalVolume* physiWorld;
+    G4LogicalVolume* logicWorld;
+    G4LogicalVolume* logicTarget;
+    G4VPhysicalVolume* ConstructWorld();
+    G4VPhysicalVolume* ConstructTarget();
+    G4VPhysicalVolume* physiWorld;
+    G4VPhysicalVolume* physiTarget;
     G4VisAttributes* visAttributes;
-	Config* config;
+    Config* config;
 };
 
 #endif

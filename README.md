@@ -73,3 +73,6 @@ Added an interface for deciding the length and width of PCB and SiPM.
 - Added an interface for deciding the read-out mode — single or dual read-out.
 - Added OCAs between the ends of the crystals. In this version, the material is epoxy (the same as that used in FR4) which should be modified in future versions. No ideal material (with specific chemical formula) has been found for this version...
 - Added exception handling section, which checks whether the length and width of ECAL match, before construction.
+
+### 12 January 2024
+Added an interface for deciding whether to construct the tungsten target or not. Besides, its size and $z$ position can also be set in the YAML file.
